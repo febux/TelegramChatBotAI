@@ -3,10 +3,12 @@ import lxml.html
 
 import yaml
 
+from conf.constants import BASE_DIR
+
 
 # класс интерфейса приложения по конвертации валют
 class APIConverter:
-    def __init__(self, currencies_file: str = 'currencies.yaml'):
+    def __init__(self, currencies_file: str = f'{BASE_DIR}\\api\\api_data\\currencies.yaml'):
         with open(currencies_file, 'r', encoding='UTF-8') as file:
             self.currencies = yaml.safe_load(file)
 

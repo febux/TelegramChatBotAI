@@ -19,9 +19,9 @@ from pydantic import SecretStr
 
 import translators as ts
 
-from api_advices import APIAdvices
-from api_currency import APIConverter
-from api_google_search import google
+from api.api_advices import APIAdvices
+from api.api_currency import APIConverter
+from api.api_google_search import google
 from text_normalizer import text_normalization
 
 api_rates = APIConverter()
@@ -83,7 +83,7 @@ async def command_help_handler(message: Message) -> None:
 
 @dp.message()
 async def message_handler(message: Message) -> None:
-    translated_text = ts.translate_text(message.text, to_language="en", translator="bing")
+    translated_text = text_normalization(ts.translate_text(message.text, to_language="en", translator="bing"))
     if result := model.predict(vectorizer.transform([translated_text])):
         print(result)
         key_word = result[0]

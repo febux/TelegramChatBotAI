@@ -2,9 +2,11 @@ from random import randint
 
 import yaml
 
+from conf.constants import BASE_DIR
+
 
 class APIAdvices:
-    def __init__(self, advices_file: str = 'advices.yaml'):
+    def __init__(self, advices_file: str = f'{BASE_DIR}\\api\\api_data\\advices.yaml'):
         with open(advices_file, 'r', encoding='UTF-8') as file:
             self.advices = yaml.safe_load(file)
 
