@@ -22,7 +22,11 @@ import translators as ts
 from api.api_advices import APIAdvices
 from api.api_currency import APIConverter
 from api.api_google_search import google
-from text_normalizer import text_normalization
+from utils.text_normalizer import text_normalization
+
+from spellchecker import SpellChecker
+
+spell = SpellChecker(language='ru')
 
 api_rates = APIConverter()
 api_advices = APIAdvices()
@@ -31,11 +35,9 @@ BASE_DIR = Path(__file__).resolve().parent
 
 data_agent_path = os.path.join(BASE_DIR, "data_agent.pickle")
 model_path = os.path.join(BASE_DIR, "model.pickle")
-vectorizer_path = os.path.join(BASE_DIR, "vectorizer.pickle")
 
 
 try:
-    vectorizer = pickle.load(open(vectorizer_path, 'rb'))
     model = pickle.load(open(model_path, 'rb'))
     data_agent = pickle.load(open(data_agent_path, 'rb'))
 except FileNotFoundError:
@@ -83,8 +85,14 @@ async def command_help_handler(message: Message) -> None:
 
 @dp.message()
 async def message_handler(message: Message) -> None:
-    translated_text = text_normalization(ts.translate_text(message.text, to_language="en", translator="bing"))
-    if result := model.predict(vectorizer.transform([translated_text])):
+    translated_text = text_normalization(
+        ts.translate_text(
+            ''.join([spell.correction(word) for word in message.text.split(" ")]),
+            to_language="en",
+            translator="bing",
+        )
+    )
+    if result := model.predict([translated_text]):
         print(result)
         key_word = result[0]
         if key_word == "guide me":
