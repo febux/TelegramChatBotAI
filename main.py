@@ -8,16 +8,16 @@ from pathlib import Path
 from random import randint
 
 from aiogram import Bot, Dispatcher, F
+from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.markdown import hbold
+from deep_translator import GoogleTranslator
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
-
-import translators as ts
 
 from api.api_advices import APIAdvices
 from api.api_currency import APIConverter
@@ -27,6 +27,8 @@ from utils.text_normalizer import text_normalization
 from spellchecker import SpellChecker
 
 spell = SpellChecker(language='ru')
+translator_to_en = GoogleTranslator(source='auto', target='en')
+translator_to_ru = GoogleTranslator(source='en', target='ru')
 
 api_rates = APIConverter()
 api_advices = APIAdvices()
@@ -62,7 +64,9 @@ class CurrencyCallback(CallbackData, prefix='currency'):
 config = Settings()
 bot = Bot(
         token=config.bot_token.get_secret_value(),
-        parse_mode=ParseMode.HTML,
+        default=DefaultBotProperties(
+            parse_mode=ParseMode.HTML,
+        ),
     )
 dp = Dispatcher()
 
@@ -86,11 +90,7 @@ async def command_help_handler(message: Message) -> None:
 @dp.message()
 async def message_handler(message: Message) -> None:
     translated_text = text_normalization(
-        ts.translate_text(
-            ''.join([spell.correction(word) for word in message.text.split(" ")]),
-            to_language="en",
-            translator="bing",
-        )
+        translator_to_en.translate(''.join([spell.correction(word) for word in message.text.split(" ")]))
     )
     if result := model.predict([translated_text]):
         print(result)
@@ -134,7 +134,7 @@ async def message_handler(message: Message) -> None:
                 print(responses)
                 resp_len = len(responses)
                 if response_res := data_agent.get(key_word).get('responses')[randint(0, resp_len - 1)]:
-                    await message.answer(ts.translate_text(response_res, to_language="ru", translator="bing"))
+                    await message.answer(translator_to_ru.translate(response_res))
     else:
         await message.answer("Жду нормальное сообщение...")
 

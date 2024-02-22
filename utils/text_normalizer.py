@@ -9,7 +9,7 @@ from conf.constants import BASE_DIR
 lemmatizer = WordNetLemmatizer()
 
 
-data.path.append(f'{BASE_DIR}\\nltk_package\\')
+data.path.append(f'{BASE_DIR}/nltk_package/')
 
 download('popular', download_dir="../nltk_package/")
 download('stopwords', download_dir="../nltk_package/")
